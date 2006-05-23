@@ -5571,13 +5571,10 @@ ALIAS (no_ip_ospf_transmit_delay,
 
 DEFUN (ospf_redistribute_source_metric_type,
        ospf_redistribute_source_metric_type_routemap_cmd,
-       "redistribute (kernel|connected|static|rip|bgp) metric <0-16777214> metric-type (1|2) route-map WORD",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n"
+       "redistribute " QUAGGA_REDIST_STR_OSPFD 
+         " metric <0-16777214> metric-type (1|2) route-map WORD",
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD
        "Metric for redistributed routes\n"
        "OSPF default metric\n"
        "OSPF exterior metric type for redistributed routes\n"
@@ -5615,13 +5612,10 @@ DEFUN (ospf_redistribute_source_metric_type,
 
 ALIAS (ospf_redistribute_source_metric_type,
        ospf_redistribute_source_metric_type_cmd,
-       "redistribute (kernel|connected|static|rip|bgp) metric <0-16777214> metric-type (1|2)",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n"
+       "redistribute " QUAGGA_REDIST_STR_OSPFD 
+       " metric <0-16777214> metric-type (1|2)",
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD
        "Metric for redistributed routes\n"
        "OSPF default metric\n"
        "OSPF exterior metric type for redistributed routes\n"
@@ -5630,25 +5624,18 @@ ALIAS (ospf_redistribute_source_metric_type,
 
 ALIAS (ospf_redistribute_source_metric_type,
        ospf_redistribute_source_metric_cmd,
-       "redistribute (kernel|connected|static|rip|bgp) metric <0-16777214>",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n"
+       "redistribute " QUAGGA_REDIST_STR_OSPFD " metric <0-16777214>",
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD
        "Metric for redistributed routes\n"
        "OSPF default metric\n")
 
 DEFUN (ospf_redistribute_source_type_metric,
        ospf_redistribute_source_type_metric_routemap_cmd,
-       "redistribute (kernel|connected|static|rip|bgp) metric-type (1|2) metric <0-16777214> route-map WORD",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n"
+       "redistribute " QUAGGA_REDIST_STR_OSPFD 
+         " metric-type (1|2) metric <0-16777214> route-map WORD",
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD
        "OSPF exterior metric type for redistributed routes\n"
        "Set OSPF External Type 1 metrics\n"
        "Set OSPF External Type 2 metrics\n"
@@ -5686,13 +5673,10 @@ DEFUN (ospf_redistribute_source_type_metric,
 
 ALIAS (ospf_redistribute_source_type_metric,
        ospf_redistribute_source_type_metric_cmd,
-       "redistribute (kernel|connected|static|rip|bgp) metric-type (1|2) metric <0-16777214>",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n"
+       "redistribute " QUAGGA_REDIST_STR_OSPFD 
+         " metric-type (1|2) metric <0-16777214>",
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD
        "OSPF exterior metric type for redistributed routes\n"
        "Set OSPF External Type 1 metrics\n"
        "Set OSPF External Type 2 metrics\n"
@@ -5701,36 +5685,25 @@ ALIAS (ospf_redistribute_source_type_metric,
 
 ALIAS (ospf_redistribute_source_type_metric,
        ospf_redistribute_source_type_cmd,
-       "redistribute (kernel|connected|static|rip|bgp) metric-type (1|2)",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n"
+       "redistribute " QUAGGA_REDIST_STR_OSPFD " metric-type (1|2)",
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD
        "OSPF exterior metric type for redistributed routes\n"
        "Set OSPF External Type 1 metrics\n"
        "Set OSPF External Type 2 metrics\n")
 
 ALIAS (ospf_redistribute_source_type_metric,
        ospf_redistribute_source_cmd,
-       "redistribute (kernel|connected|static|rip|bgp)",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n")
+       "redistribute " QUAGGA_REDIST_STR_OSPFD,
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD)
 
 DEFUN (ospf_redistribute_source_metric_routemap,
        ospf_redistribute_source_metric_routemap_cmd,
-       "redistribute (kernel|connected|static|rip|bgp) metric <0-16777214> route-map WORD",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n"
+       "redistribute " QUAGGA_REDIST_STR_OSPFD 
+         " metric <0-16777214> route-map WORD",
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD
        "Metric for redistributed routes\n"
        "OSPF default metric\n"
        "Route map reference\n"
@@ -5759,13 +5732,10 @@ DEFUN (ospf_redistribute_source_metric_routemap,
 
 DEFUN (ospf_redistribute_source_type_routemap,
        ospf_redistribute_source_type_routemap_cmd,
-       "redistribute (kernel|connected|static|rip|bgp) metric-type (1|2) route-map WORD",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n"
+       "redistribute " QUAGGA_REDIST_STR_OSPFD 
+         " metric-type (1|2) route-map WORD",
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD
        "OSPF exterior metric type for redistributed routes\n"
        "Set OSPF External Type 1 metrics\n"
        "Set OSPF External Type 2 metrics\n"
@@ -5795,13 +5765,9 @@ DEFUN (ospf_redistribute_source_type_routemap,
 
 DEFUN (ospf_redistribute_source_routemap,
        ospf_redistribute_source_routemap_cmd,
-       "redistribute (kernel|connected|static|rip|bgp) route-map WORD",
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n"
+       "redistribute " QUAGGA_REDIST_STR_OSPFD " route-map WORD",
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD
        "Route map reference\n"
        "Pointer to route-map entries\n")
 {
@@ -5822,14 +5788,10 @@ DEFUN (ospf_redistribute_source_routemap,
 
 DEFUN (no_ospf_redistribute_source,
        no_ospf_redistribute_source_cmd,
-       "no redistribute (kernel|connected|static|rip|bgp)",
+       "no redistribute " QUAGGA_REDIST_STR_OSPFD,
        NO_STR
-       "Redistribute information from another routing protocol\n"
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n")
+       REDIST_STR
+       QUAGGA_REDIST_HELP_STR_OSPFD)
 {
   struct ospf *ospf = vty->index;
   int source;
@@ -5843,15 +5805,11 @@ DEFUN (no_ospf_redistribute_source,
 
 DEFUN (ospf_distribute_list_out,
        ospf_distribute_list_out_cmd,
-       "distribute-list WORD out (kernel|connected|static|rip|bgp)",
+       "distribute-list WORD out " QUAGGA_REDIST_STR_OSPFD,
        "Filter networks in routing updates\n"
        "Access-list name\n"
        OUT_STR
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n")
+       QUAGGA_REDIST_HELP_STR_OSPFD)
 {
   struct ospf *ospf = vty->index;
   int source;
@@ -5865,16 +5823,12 @@ DEFUN (ospf_distribute_list_out,
 
 DEFUN (no_ospf_distribute_list_out,
        no_ospf_distribute_list_out_cmd,
-       "no distribute-list WORD out (kernel|connected|static|rip|bgp)",
+       "no distribute-list WORD out " QUAGGA_REDIST_STR_OSPFD,
        NO_STR
        "Filter networks in routing updates\n"
        "Access-list name\n"
        OUT_STR
-       "Kernel routes\n"
-       "Connected\n"
-       "Static routes\n"
-       "Routing Information Protocol (RIP)\n"
-       "Border Gateway Protocol (BGP)\n")
+       QUAGGA_REDIST_HELP_STR_OSPFD)
 {
   struct ospf *ospf = vty->index;
   int source;
