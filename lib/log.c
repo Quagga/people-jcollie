@@ -1,5 +1,5 @@
 /*
- * $Id: log.c,v 1.27 2006/05/15 16:56:51 paul Exp $
+ * $Id$
  *
  * Logging of zebra
  * Copyright (C) 1997, 1998, 1999 Kunihiro Ishiguro
