@@ -12,6 +12,8 @@
 	  define.
 	  (zlog_backtrace_sigsafe) Ditto. Add printstack() version of the
 	  the DUMP macro in this function.
+	* memory.h: Experimental, have XFREE macro NULL out the freed
+	  pointer.
 
 2006-05-21 Andrew J. Schorr <ajschorr@alumni.princeton.edu>
 
