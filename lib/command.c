@@ -1,5 +1,5 @@
 /*
-   $Id: command.c,v 1.53 2006/05/12 23:24:09 paul Exp $
+   $Id$
  
    Command interpreter routine for virtual terminal [aka TeletYpe]
    Copyright (C) 1997, 98, 99 Kunihiro Ishiguro
