@@ -203,8 +203,8 @@ nsm_twoway_received (struct ospf_neighbor *nbr)
     next_state = NSM_ExStart;
 
   /* Neighboring Router is the DRouter or the BDRouter. */
-  if (IPV4_ADDR_SAME (&nbr->address.u.prefix4, &nbr->d_router) ||
-      IPV4_ADDR_SAME (&nbr->address.u.prefix4, &nbr->bd_router))
+  if (IPV4_ADDR_SAME (&nbr->address.u.prefix4, &DR(oi)) ||
+      IPV4_ADDR_SAME (&nbr->address.u.prefix4, &BDR(oi)))
     next_state = NSM_ExStart;
 
   return next_state;
@@ -697,7 +697,17 @@ nsm_change_state (struct ospf_neighbor *nbr, int state)
 
   if (oi->type == OSPF_IFTYPE_VIRTUALLINK)
     vl_area = ospf_area_lookup_by_area_id (oi->ospf, oi->vl_data->vl_area_id);
-  
+
+  /* Optionally notify about adjacency changes */
+  if (CHECK_FLAG(oi->ospf->config, OSPF_LOG_ADJACENCY_CHANGES) &&
+      (old_state != state) &&
+      (CHECK_FLAG(oi->ospf->config, OSPF_LOG_ADJACENCY_DETAIL) ||
+       (state == NSM_Full) || (state < old_state)))
+    zlog_notice("AdjChg: Nbr %s on %s: %s -> %s",
+		inet_ntoa (nbr->router_id), IF_NAME (nbr->oi),
+		LOOKUP (ospf_nsm_state_msg, old_state),
+		LOOKUP (ospf_nsm_state_msg, state));
+
 #ifdef HAVE_SNMP
   /* Terminal state or regression */ 
   if ((state == NSM_Full) || (state == NSM_TwoWay) || (state < old_state))
