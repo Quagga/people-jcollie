@@ -1,3 +1,13 @@
+2006-07-27 Paul Jakma <paul.jakma@sun.com>
+
+	* {ioctl,kernel}_null.c: Dummy/Null kernel method implementations,
+	  useful for testing zebra code that calls such methods.
+	* {redistribute,misc}_null.c: Dummy/Null methods, as above. But
+	  for zclient, and for various misc functions.
+	* test_main.c: Test harness for zebra, currently just to test the
+	  RIB.
+	* Makefile.am: Build testzebra using above.
+
 2006-07-02 Paul Jakma <paul.jakma@sun.com>
 
 	* rt_netlink.c: (netlink_interface_addr) Fix CID #104, can not
