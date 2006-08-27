@@ -1,3 +1,23 @@
+2006-08-06 Paul Jakma <paul.jakma@sun.com>
+
+	* interface.h: (ifstat_update_proc) declaration should match
+	  ifstat_update_sysctl really, which is to not return status, as
+	  such status is not used anywhere.
+	* if_{proc,sysctl}.c: Make ifstat_update_* definitions and return values
+	  consistent with each other and their declarations, ie: 
+	  (void) (*) (void).
+	* rtadv.h: depends on interface.h, so should include it.
+
+2006-08-04 Paul Jakma <paul.jakma@sun.com>
+
+	* misc_null.c: Add ifstat_update_sysctl, add another required
+	  header.
+
+2006-08-02 Andrew J. Schorr <ajschorr@alumni.princeton.edu>
+
+	* misc_null.c: Must include header files to get older versions of gcc
+	  to process the #pragma statements properly.
+
 2006-08-01 Paul Jakma <paul.jakma@sun.com>
 
 	* irdp_main.c: (irdp_advertisement) free the stream here, when done,
