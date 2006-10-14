@@ -1,3 +1,13 @@
+2006-10-14 Paul Jakma <paul.jakma@sun.com>
+
+	* if.c: (general) Handle upgrades from SUNWzebra, which tried
+	  to track each logical interface as a seperate struct
+	  interface, to Quagga, which assigns only one struct interface
+	  per ifindex.
+	  (if_sunwzebra_get) Try decompose a logical interface name
+          (fooX:Y) to the 'primary' name (fooX), for Solaris.
+          (interface_cmd) Use if_sunwzebra_get on Solaris.
+
 2006-08-25 Paul Jakma <paul.jakma@sun.com>
 
 	* thread.c: (general) Add support for monotonic clock, it may still
