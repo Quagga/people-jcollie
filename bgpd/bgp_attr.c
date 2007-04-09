@@ -2200,8 +2200,8 @@ bgp_dump_routes_attr (struct stream *s, struct attr *attr,
     {
       stream_putc (s, BGP_ATTR_FLAG_OPTIONAL|BGP_ATTR_FLAG_TRANS);
       stream_putc (s, BGP_ATTR_AGGREGATOR);
-      stream_putc (s, 6);
-      stream_putw (s, attr->aggregator_as);
+      stream_putc (s, 8);
+      stream_putl (s, attr->aggregator_as);
       stream_put_ipv4 (s, attr->aggregator_addr.s_addr);
     }
 
