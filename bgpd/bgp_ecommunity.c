@@ -284,7 +284,7 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
   u_int32_t val_high = 0;
   const char *p = str;
   struct in_addr ip;
-  as_t asn32;
+  as_t as4;
   char helpstr[INET_ADDRSTRLEN + 1];
 
   /* Skip white space. */
@@ -348,7 +348,7 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
       goto error;
     }
   
-  asn32 = (as_t) 0;
+  as4 = (as_t) 0;
   while (isdigit ((int) *p) || *p == ':' || *p == '.') 
     {
       if (*p == ':') 
@@ -370,8 +370,8 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
 	      if ( dot == 1 )
 		{
 		  /* ONE dot => 4 Byte AS number */
-		  asn32 = str2asnum( helpstr, NULL);
-		  if ( !asn32 )
+		  as4 = str2asnum( helpstr, NULL);
+		  if ( !as4 )
 		    goto error;
 		}
 	      else
@@ -407,23 +407,23 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
   if (! digit || ! separator)
     goto error;
 
-  if ( !asn32 && !dot && val_high > 65535 )
+  if ( !as4 && !dot && val_high > 65535 )
     {
       /* Ha.  someone using asplain for input
        * Automagically switch to 4 byte as!
        * Got it!
        */
-      asn32 = val_high;
+      as4 = val_high;
     }
   /* Encode result into routing distinguisher.  */
-  if (asn32)
+  if (as4)
     {
-      eval->val[0] = ECOMMUNITY_ENCODE_AS4BYTE;
+      eval->val[0] = ECOMMUNITY_ENCODE_AS4;
       eval->val[1] = 0;
-      eval->val[2] = (asn32 >>24) & 0xff;
-      eval->val[3] = (asn32 >>16) & 0xff;
-      eval->val[4] = (asn32 >>8) & 0xff;
-      eval->val[5] = asn32 & 0xff;
+      eval->val[2] = (as4 >>24) & 0xff;
+      eval->val[3] = (as4 >>16) & 0xff;
+      eval->val[4] = (as4 >>8) & 0xff;
+      eval->val[5] = as4 & 0xff;
       eval->val[6] = (val_low >> 8) & 0xff;
       eval->val[7] = val_low & 0xff;
     }
@@ -609,7 +609,7 @@ ecommunity_ecom2str (struct ecommunity *ecom, int format)
       /* High-order octet of type. */
       encode = *pnt++;
       if (encode != ECOMMUNITY_ENCODE_AS && encode != ECOMMUNITY_ENCODE_IP
-		      && encode != ECOMMUNITY_ENCODE_AS4BYTE)
+		      && encode != ECOMMUNITY_ENCODE_AS4)
 	{
 	  len = sprintf (str_buf + str_pnt, "?");
 	  str_pnt += len;
@@ -651,7 +651,7 @@ ecommunity_ecom2str (struct ecommunity *ecom, int format)
 	}
 
       /* Put string into buffer.  */
-      if (encode == ECOMMUNITY_ENCODE_AS4BYTE)
+      if (encode == ECOMMUNITY_ENCODE_AS4)
 	{
 	  eas.as = (*pnt++ << 24);
 	  eas.as |= (*pnt++ << 16);
@@ -663,7 +663,7 @@ ecommunity_ecom2str (struct ecommunity *ecom, int format)
 
 	  /* Bad luck. Have to enforce asdot+ here, otherwise reading in
 	   * the values again from a config file will not work, and you
-	   * can not detect an asn32 extcommunity if the asn is < 65536.
+	   * can not detect an as4 extcommunity if the asn is < 65536.
 	   * Probably this syntax is the wrong one to use after all,
 	   * having even one place to rely on a specific format does not
 	   * fit in a "configurable format".

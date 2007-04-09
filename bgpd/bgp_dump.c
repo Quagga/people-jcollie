@@ -364,12 +364,12 @@ bgp_dump_interval_func (struct thread *t)
 
 /* Dump common information. */
 static void
-bgp_dump_common (struct stream *obuf, struct peer *peer, int forceasn32)
+bgp_dump_common (struct stream *obuf, struct peer *peer, int forceas4)
 {
   char empty[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
   /* Source AS number and Destination AS number. */
-  if (forceasn32 || CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV) )
+  if (forceas4 || CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV) )
     {
       stream_putl (obuf, peer->as);
       stream_putl (obuf, peer->local_as);
@@ -425,7 +425,7 @@ bgp_dump_state (struct peer *peer, int status_old, int status_new)
   stream_reset (obuf);
 
   bgp_dump_header (obuf, MSG_PROTOCOL_BGP4MP, BGP4MP_STATE_CHANGE_32BIT_AS);
-  bgp_dump_common (obuf, peer, 1);/* force this in asn32speak*/
+  bgp_dump_common (obuf, peer, 1);/* force this in as4speak*/
 
   stream_putw (obuf, status_old);
   stream_putw (obuf, status_new);
@@ -453,7 +453,7 @@ bgp_dump_packet_func (struct bgp_dump *bgp_dump, struct peer *peer,
   stream_reset (obuf);
 
   /* Dump header and common part. */
-  if (CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV) )
+  if (CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV) )
     { 
       bgp_dump_header (obuf, MSG_PROTOCOL_BGP4MP, BGP4MP_MESSAGE_32BIT_AS);
     }

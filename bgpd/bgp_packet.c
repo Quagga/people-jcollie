@@ -809,7 +809,7 @@ bgp_open_send (struct peer *peer)
     stream_putw (s, (u_int16_t) local_as);	/* My Autonomous System*/
   else
     /* does not fit in 16 bit, so as per */
-    /* draft_ietf_idr_as4bytes-12: */
+    /* draft_ietf_idr_as4bytes-13: */
     /* AS_TRANS is put in the My Autonomous System field */
     /* of the open message of a NEW BGP speaker */
     stream_putw (s, BGP_AS_TRANS);		/* My Autonomous System*/
@@ -1200,14 +1200,14 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
       /* We got capabilities.  Now, for simplicity, we always read
        * them when we were through the basic things, i.e. at the end
        * of this function.
-       * But we need the as32 capability value *right now* because
+       * But we need the as4 capability value *right now* because
        * if it is there, we have not got the remote_as yet, and without
        * that we do not know which peer is connecting to us now.
        *
        * So, keep everything safe, and peek into the capabilites,
-       * and look just for as32!
+       * and look just for as4!
        */ 
-      peek_for_as32_capability( peer, optlen );
+      peek_for_as4_capability( peer, optlen );
     }
 
   /* Receive OPEN message log  */
@@ -1218,18 +1218,18 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
 	  
   if ( remote_as == BGP_AS_TRANS )
     {
-      if ( peer->as32cap > BGP_AS_MAX )
+      if ( peer->as4cap > BGP_AS_MAX )
 	{
-	  /* Take the AS32 from the capability.
+	  /* Take the AS4 from the capability.
 	   * We must have received the capability now!
 	   * Otherwise we have a asn16 peer who uses BGP_AS_TRANS,
 	   * which we will not tolerate
 	   */
 
-	  if ( !CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV) )
+	  if ( !CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV) )
 	    {
 	      /* raise error, log this, close session */
-	      zlog_err ("%s bad OPEN, got AS_TRANS but no 4BYTE_AS capability address peer->cap is %08x, value %d",
+	      zlog_err ("%s bad OPEN, got AS_TRANS but no AS4 capability address peer->cap is %08x, value %d",
 		  peer->host, &peer->cap, peer->cap);
 	      /* which error to notify? well, use something generic,
 	       * our log has the right reason
@@ -1239,17 +1239,17 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
 	      return -1;
 	    }
 	  else
-	    remote_as = peer->as32cap;
+	    remote_as = peer->as4cap;
 	}
     } else {
-      /* We may have a partner with AS32 who has an asno < BGP_AS_MAX */
-      /* If we have got the capability, peer->as32cap must match remote_as */
-      if ( CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV) &&
-         peer->as32cap != remote_as )
+      /* We may have a partner with AS4 who has an asno < BGP_AS_MAX */
+      /* If we have got the capability, peer->as4cap must match remote_as */
+      if ( CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV) &&
+         peer->as4cap != remote_as )
         {
 	  /* raise error, log this, close session */
-	  zlog_err ("%s bad OPEN, got 4BYTEAS capability, but remote_as %u mismatch with 16bit 'myasn' %u in open",
-	      peer->host, peer->as32cap, remote_as);
+	  zlog_err ("%s bad OPEN, got AS4 capability, but remote_as %u mismatch with 16bit 'myasn' %u in open",
+	      peer->host, peer->as4cap, remote_as);
 	  bgp_notify_send (peer, BGP_NOTIFY_CEASE,
 			   BGP_NOTIFY_CEASE_CONNECT_REJECT);
 	  /* which error to notify? well, use something generic,

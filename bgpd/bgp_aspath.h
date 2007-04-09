@@ -61,7 +61,7 @@ struct aspath
 
 #define ASPATH_STR_DEFAULT_LEN 32
 
-/* stuffed this here, with asn32 we have different asnumber formats */
+/* stuffed this here, with as4 we have different asnumber formats */
 enum bgp_asnumber_format
 {
   BGP_ASNUMBER_FORMAT_ASDOT,

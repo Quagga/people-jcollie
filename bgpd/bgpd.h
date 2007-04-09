@@ -270,8 +270,8 @@ struct peer
   /* Peer's Change local AS number. */
   as_t change_local_as;
 
-  /* Peer's AS number as received with AS32Capability */
-  as_t as32cap;
+  /* Peer's AS number as received with AS4Capability */
+  as_t as4cap;
 
   /* Remote router ID. */
   struct in_addr remote_id;
@@ -329,8 +329,8 @@ struct peer
 #define PEER_CAP_DYNAMIC_RCV                (1 << 4) /* dynamic received */
 #define PEER_CAP_RESTART_ADV                (1 << 5) /* restart advertised */
 #define PEER_CAP_RESTART_RCV                (1 << 6) /* restart received */
-#define PEER_CAP_4BYTE_AS_ADV               (1 << 7) /* 4byteas advertised */
-#define PEER_CAP_4BYTE_AS_RCV               (1 << 8) /* 4byteas received */
+#define PEER_CAP_AS4_ADV                    (1 << 7) /* as4 advertised */
+#define PEER_CAP_AS4_RCV                    (1 << 8) /* as4 received */
 
   /* Capability flags (reset in bgp_stop) */
   u_int16_t af_cap[AFI_MAX][SAFI_MAX];
@@ -598,8 +598,8 @@ struct bgp_nlri
 #define BGP_ATTR_MP_REACH_NLRI                  14
 #define BGP_ATTR_MP_UNREACH_NLRI                15
 #define BGP_ATTR_EXT_COMMUNITIES                16
-#define BGP_ATTR_NEW_AS_PATH                    17
-#define BGP_ATTR_NEW_AGGREGATOR                 18
+#define BGP_ATTR_AS4_PATH                       17
+#define BGP_ATTR_AS4_AGGREGATOR                 18
 
 /* BGP update origin.  */
 #define BGP_ORIGIN_IGP                           0

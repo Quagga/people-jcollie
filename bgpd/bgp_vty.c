@@ -7360,16 +7360,16 @@ bgp_show_peer (struct vty *vty, struct peer *p)
 	{
 	  vty_out (vty, "  Neighbor capabilities:%s", VTY_NEWLINE);
 
-	  /* 4BYTEAS */
-	  if (CHECK_FLAG (p->cap, PEER_CAP_4BYTE_AS_RCV)
-	      || CHECK_FLAG (p->cap, PEER_CAP_4BYTE_AS_ADV))
+	  /* AS4 */
+	  if (CHECK_FLAG (p->cap, PEER_CAP_AS4_RCV)
+	      || CHECK_FLAG (p->cap, PEER_CAP_AS4_ADV))
 	    {
 	      vty_out (vty, "    4 Byte AS:");
-	      if (CHECK_FLAG (p->cap, PEER_CAP_4BYTE_AS_ADV))
+	      if (CHECK_FLAG (p->cap, PEER_CAP_AS4_ADV))
 		vty_out (vty, " advertised");
-	      if (CHECK_FLAG (p->cap, PEER_CAP_4BYTE_AS_RCV))
+	      if (CHECK_FLAG (p->cap, PEER_CAP_AS4_RCV))
 		vty_out (vty, " %sreceived",
-			 CHECK_FLAG (p->cap, PEER_CAP_4BYTE_AS_ADV) ? "and " : "");
+			 CHECK_FLAG (p->cap, PEER_CAP_AS4_ADV) ? "and " : "");
 	      vty_out (vty, "%s", VTY_NEWLINE);
 	    }
 	  /* Dynamic */

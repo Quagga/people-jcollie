@@ -2106,15 +2106,15 @@ peer_lookup_with_open (union sockunion *su, as_t remote_as,
 	{
 	  if ( (peer->as == remote_as
 			|| (peer->as == BGP_AS_TRANS &&
-				peer->as32cap == remote_as &&
-				CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV))
+				peer->as4cap == remote_as &&
+				CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV))
 				  )
 	      && peer->remote_id.s_addr == remote_id->s_addr)
 	    return peer;
 	  if ( (peer->as == remote_as
 			|| (peer->as == BGP_AS_TRANS &&
-				peer->as32cap == remote_as &&
-				CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV))
+				peer->as4cap == remote_as &&
+				CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV))
 
 	       )
 			  )
@@ -2128,15 +2128,15 @@ peer_lookup_with_open (union sockunion *su, as_t remote_as,
 	{
 	  if ( ( peer->as == remote_as
 			|| (peer->as == BGP_AS_TRANS &&
-				peer->as32cap == remote_as &&
-				CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV))
+				peer->as4cap == remote_as &&
+				CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV))
 	       )
 	      && peer->remote_id.s_addr == 0)
 	    return peer;
 	  if ( peer->as == remote_as
 			|| (peer->as == BGP_AS_TRANS &&
-				peer->as32cap == remote_as &&
-				CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV))
+				peer->as4cap == remote_as &&
+				CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV))
 			  )
 	    *as = 1;
 	}

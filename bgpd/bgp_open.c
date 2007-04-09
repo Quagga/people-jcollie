@@ -33,6 +33,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 #include "bgpd/bgp_fsm.h"
 #include "bgpd/bgp_packet.h"
 #include "bgpd/bgp_open.h"
+#include "bgpd/bgp_aspath.h"
 #include "bgpd/bgp_vty.h"
 
 /* BGP-4 Multiprotocol Extentions lead us to the complex world. We can
@@ -483,18 +484,18 @@ bgp_capability_parse (struct peer *peer, u_char *pnt, u_char length,
 
 	  SET_FLAG (peer->cap, PEER_CAP_DYNAMIC_RCV);
 	}
-      else if (cap.code == CAPABILITY_CODE_4BYTE_AS)
+      else if (cap.code == CAPABILITY_CODE_AS4)
 	{
 	  /* Check length */
-	  if (cap.length != CAPABILITY_CODE_4BYTE_AS_LEN)
+	  if (cap.length != CAPABILITY_CODE_AS4_LEN)
 	    {
-	      zlog_info ("%s 4Byte-AS Capability length error %d",
+	      zlog_info ("%s AS4 Capability length error %d",
 			 peer->host, cap.length);
 	      bgp_notify_send (peer, BGP_NOTIFY_CEASE, 0);
 	      return -1;
 	    }
 	  if (BGP_DEBUG (normal, NORMAL))
-	    zlog_debug ("%s OPEN has 4BYTEAS capability", peer->host);
+	    zlog_debug ("%s OPEN has AS4 capability", peer->host);
 
 	  {
 	     /* 
@@ -503,19 +504,19 @@ bgp_capability_parse (struct peer *peer, u_char *pnt, u_char length,
 	      * Do the byte swivveling now
 	      */
 	    u_char *gotthis = (char *) &cap.mpc;
-	    peer->as32cap = ((u_char) *gotthis++) << 24;
-	    peer->as32cap |= ((u_char) *gotthis++) << 16;
-	    peer->as32cap |= ((u_char) *gotthis++) << 8;
-	    peer->as32cap |= ((u_char) *gotthis);
+	    peer->as4cap = ((u_char) *gotthis++) << 24;
+	    peer->as4cap |= ((u_char) *gotthis++) << 16;
+	    peer->as4cap |= ((u_char) *gotthis++) << 8;
+	    peer->as4cap |= ((u_char) *gotthis);
 	  }
 
-	  if (BGP_DEBUG (asn32, ASN32))
-	    zlog_debug ("[ASN32] %s about to set cap PEER_CAP_4BYTE_AS_RCV at address %08x, value now %d, as32cap is %s", peer->host, &peer->cap, peer->cap,as2str(peer->as32cap));
+	  if (BGP_DEBUG (as4, AS4))
+	    zlog_debug ("[AS4] %s about to set cap PEER_CAP_AS4_RCV at address %08x, value now %d, as4cap is %s", peer->host, &peer->cap, peer->cap,as2str(peer->as4cap));
 
-	  SET_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV);
+	  SET_FLAG (peer->cap, PEER_CAP_AS4_RCV);
 
-	  if (BGP_DEBUG (asn32, ASN32))
-	    zlog_debug ("[ASN32] %s set cap PEER_CAP_4BYTE_AS_RCV at address %08x, value now %d", peer->host, &peer->cap, peer->cap);
+	  if (BGP_DEBUG (as4, AS4))
+	    zlog_debug ("[AS4] %s set cap PEER_CAP_AS4_RCV at address %08x, value now %d", peer->host, &peer->cap, peer->cap);
 	}
  
       else if (cap.code > 128)
@@ -559,8 +560,8 @@ strict_capability_same (struct peer *peer)
   return 1;
 }
 
-/* peek into option, set as32 value if it is there */
-void peek_for_as32_capability( struct peer *peer, u_char length )
+/* peek into option, set as4 value if it is there */
+void peek_for_as4_capability( struct peer *peer, u_char length )
 {
   u_char *pnt;
   u_char *end;
@@ -571,11 +572,11 @@ void peek_for_as32_capability( struct peer *peer, u_char length )
   pnt = stream_pnt (peer->ibuf);
   end = pnt + length;
 
-  if (BGP_DEBUG (asn32, ASN32))
-    zlog_debug ("[ASN32] %s rcv OPEN w/ OPTION parameter len: %u, peeking for as32",
+  if (BGP_DEBUG (as4, AS4))
+    zlog_debug ("[AS4] %s rcv OPEN w/ OPTION parameter len: %u, peeking for as4",
 	       peer->host, length);
   
-  /* the error cases we DONT handle, we ONLY try to read as32 out of
+  /* the error cases we DONT handle, we ONLY try to read as4 out of
    * correctly formatted options
    */
   while (pnt < end) 
@@ -616,12 +617,12 @@ void peek_for_as32_capability( struct peer *peer, u_char length )
 	      if (mypnt + (cap.length + 2) > myend)
 		return;
 
-	      if (cap.code == CAPABILITY_CODE_4BYTE_AS)
+	      if (cap.code == CAPABILITY_CODE_AS4)
 		{
-		  if (cap.length != CAPABILITY_CODE_4BYTE_AS_LEN)
+		  if (cap.length != CAPABILITY_CODE_AS4_LEN)
 		    return;
-		  if (BGP_DEBUG (asn32, ASN32))
-		    zlog_debug ("[ASN32] %s OPEN peeking found 4BYTEAS capability", peer->host);
+		  if (BGP_DEBUG (as4, AS4))
+		    zlog_debug ("[AS4] %s OPEN peeking found AS4 capability", peer->host);
 
 		  {
 		     /* 
@@ -629,13 +630,13 @@ void peek_for_as32_capability( struct peer *peer, u_char length )
 		      * Do the byte swivveling now
 		      */
 		    u_char *gotthis = (char *) &cap.mpc;
-		    peer->as32cap = ((u_char) *gotthis++) << 24;
-		    peer->as32cap |= ((u_char) *gotthis++) << 16;
-		    peer->as32cap |= ((u_char) *gotthis++) << 8;
-		    peer->as32cap |= ((u_char) *gotthis);
+		    peer->as4cap = ((u_char) *gotthis++) << 24;
+		    peer->as4cap |= ((u_char) *gotthis++) << 16;
+		    peer->as4cap |= ((u_char) *gotthis++) << 8;
+		    peer->as4cap |= ((u_char) *gotthis);
 
 		  }
-		  SET_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV);
+		  SET_FLAG (peer->cap, PEER_CAP_AS4_RCV);
 
 		}
 		mypnt += cap.length + 2;
@@ -940,12 +941,12 @@ bgp_open_capability (struct stream *s, struct peer *peer)
   stream_putc (s, CAPABILITY_CODE_REFRESH);
   stream_putc (s, CAPABILITY_CODE_REFRESH_LEN);
 
-  /* AS32 */
-  SET_FLAG (peer->cap, PEER_CAP_4BYTE_AS_ADV);
+  /* AS4 */
+  SET_FLAG (peer->cap, PEER_CAP_AS4_ADV);
   stream_putc (s, BGP_OPEN_OPT_CAP);
-  stream_putc (s, CAPABILITY_CODE_4BYTE_AS_LEN + 2);
-  stream_putc (s, CAPABILITY_CODE_4BYTE_AS);
-  stream_putc (s, CAPABILITY_CODE_4BYTE_AS_LEN);
+  stream_putc (s, CAPABILITY_CODE_AS4_LEN + 2);
+  stream_putc (s, CAPABILITY_CODE_AS4);
+  stream_putc (s, CAPABILITY_CODE_AS4_LEN);
   if ( peer->change_local_as )
     local_as = peer->change_local_as;
   else

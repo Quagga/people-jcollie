@@ -98,7 +98,7 @@ struct hash *ashash;
 /* Stream for SNMP. See aspath_snmp_pathseg */
 static struct stream *snmp_stream;
 
-/* asn32 related asnumber format things */
+/* as4 related asnumber format things */
 
 static
 int bgp_asnumber_format = BGP_ASNUMBER_FORMAT_DEFAULT;
@@ -176,7 +176,7 @@ as_t str2asnum ( const char *p, const char **q )
   unsigned int dottedints[4]; /* max 4 ints */
   int numints; /* how many ints we saw */
 
-  /* Eat ASN32 regardless of syntax - eat asplain, asdot, asdot+, and asip,
+  /* Eat AS4 regardless of syntax - eat asplain, asdot, asdot+, and asip,
    * while we're here
    */
   /* return current value of p in q if q is there.  Needed when
@@ -657,7 +657,7 @@ aspath_make_str_count (struct aspath *as)
    */
   /* What will be common in the future? As soon as a 32 Bit AS number shows
    * up, such an ASN takes again 5+1 chars - if the whole number range will
-   * be used.  But usage of AS32 will be the exception for some time now.
+   * be used.  But usage of AS4 will be the exception for some time now.
    * ah, what the heck, we put this into this now.
    */
 #define ASN_STR_LEN (5 + 1)
@@ -812,8 +812,8 @@ assegments_parse (struct stream *s, size_t length, int use32bit)
   if (length == 0)
     return NULL;
   
-  if (BGP_DEBUG (asn32, ASN32_SEGMENT))
-    zlog_debug ("[ASN32SEG] Parse aspath segment: got total byte length %d",length);
+  if (BGP_DEBUG (as4, AS4_SEGMENT))
+    zlog_debug ("[AS4SEG] Parse aspath segment: got total byte length %d",length);
   /* basic checks */
   if ( (STREAM_READABLE(s) < length)
       || (STREAM_READABLE(s) < AS_HEADER_SIZE) 
@@ -829,8 +829,8 @@ assegments_parse (struct stream *s, size_t length, int use32bit)
       segh.type = stream_getc (s);
       segh.length = stream_getc (s);
 
-      if (BGP_DEBUG (asn32, ASN32_SEGMENT))
-	zlog_debug ("[ASN32SEG] Parse aspath segment: got type %d, length %d",segh.type, segh.length);
+      if (BGP_DEBUG (as4, AS4_SEGMENT))
+	zlog_debug ("[AS4SEG] Parse aspath segment: got type %d, length %d",segh.type, segh.length);
       
       /* check it.. */
       /*
@@ -859,13 +859,13 @@ assegments_parse (struct stream *s, size_t length, int use32bit)
       for (i = 0; i < segh.length; i++)
         {
 	  seg->as[i] = (use32bit)? (stream_getl(s)) : (stream_getw (s));
-          if (BGP_DEBUG (asn32, ASN32_SEGMENT))
-	    zlog_debug ("[ASN32SEG] Parse aspath segment: Read %s into this segment",as2str(seg->as[i]));
+          if (BGP_DEBUG (as4, AS4_SEGMENT))
+	    zlog_debug ("[AS4SEG] Parse aspath segment: Read %s into this segment",as2str(seg->as[i]));
 	}
       
       bytes += (use32bit) ? ASSEGMENT_SIZE(segh.length) : ASSEGMENT16_SIZE(segh.length);
-      if (BGP_DEBUG (asn32, ASN32_SEGMENT))
-	zlog_debug ("[ASN32SEG] Parse aspath segment: Bytes now: %d",bytes);
+      if (BGP_DEBUG (as4, AS4_SEGMENT))
+	zlog_debug ("[AS4SEG] Parse aspath segment: Bytes now: %d",bytes);
       
       prev = seg;
     }
@@ -1404,7 +1404,7 @@ aspath_cmp_left (struct aspath *aspath1, struct aspath *aspath2)
 }
 
 /* Truncate an aspath after a number of hops, and put the hops remaining
- * at the front of another aspath.  Needed for ASN32 compat. */
+ * at the front of another aspath.  Needed for AS4 compat. */
 void
 aspath_truncateathopsandjoin( struct aspath **aspath, struct aspath **new_aspath,int hops )
 {
@@ -1428,7 +1428,7 @@ aspath_truncateathopsandjoin( struct aspath **aspath, struct aspath **new_aspath
 		  /* Now, this can not be legal, can it?
 		   * We are supposed to take only *some* ases out of
 		   * a CONFED_SEQUENCE. and the path then continues
-		   * with the contents of NEW_ASPATH?  you are
+		   * with the contents of AS4_PATH?  you are
 		   * kidding, this can not be right.
 		   *
 		   * Now, what is the fallback in this case?
@@ -1441,12 +1441,12 @@ aspath_truncateathopsandjoin( struct aspath **aspath, struct aspath **new_aspath
 		   *
 		   * But burp out a warning, this is suspicious!
 		   * Guess someone runs an AS confederation with only
-		   * some routers asn32 capable... something which is
+		   * some routers as4 capable... something which is
 		   * not supposed to be done...
 		   */
 		  assegment_free( seg );
-		  if (BGP_DEBUG (asn32, ASN32))
-		    zlog_debug ("[ASN32] ASPATH32mangle: AS_CONFED_SEQUENCE would have been cut in two, taking AS_PATH instead of mangling");
+		  if (BGP_DEBUG (as4, AS4))
+		    zlog_debug ("[AS4] ASPATH32mangle: AS_CONFED_SEQUENCE would have been cut in two, taking AS_PATH instead of mangling");
 		  aspath_unintern(*new_aspath);
 		  *new_aspath = NULL;
 		  return;

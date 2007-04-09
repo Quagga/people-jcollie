@@ -56,8 +56,8 @@ struct message attr_str [] =
   { BGP_ATTR_RCID_PATH,        "RCID_PATH" },
   { BGP_ATTR_MP_REACH_NLRI,    "MP_REACH_NLRI" },
   { BGP_ATTR_MP_UNREACH_NLRI,  "MP_UNREACH_NLRI" },
-  { BGP_ATTR_NEW_AS_PATH,      "NEW_AS_PATH" }, 
-  { BGP_ATTR_NEW_AGGREGATOR,   "NEW_AGGREGATOR" }, 
+  { BGP_ATTR_AS4_PATH,         "AS4_PATH" }, 
+  { BGP_ATTR_AS4_AGGREGATOR,   "AS4_AGGREGATOR" }, 
   { 0, NULL }
 };
 
@@ -675,10 +675,10 @@ bgp_attr_aspath (struct peer *peer, bgp_size_t length,
     }
 
   /*
-   * peer with 4BYTE_AS => will get 4Byte ASnums
+   * peer with AS4 => will get 4Byte ASnums
    * otherwise, will get 16 Bit
    */
-  if ( CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV ) )
+  if ( CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV ) )
     attr->aspath = aspath_parse (peer->ibuf, length, 1);
   else
     attr->aspath = aspath_parse (peer->ibuf, length, 0);
@@ -706,7 +706,7 @@ static int bgp_attr_aspath_check( struct peer *peer,
 		struct attr *attr)
 {
   /* These checks were part of bgp_attr_aspath, but with
-   * asn32 we should to check aspath things when
+   * as4 we should to check aspath things when
    * aspath synthesizing with new_aspath has already taken place.
    * Otherwise we check ASPATH and use the synthesized thing, and that is
    * not right.
@@ -755,7 +755,7 @@ bgp_attr_new_aspath (struct peer *peer, bgp_size_t length,
   attr->new_aspath = aspath_parse (peer->ibuf, length, 1);
 
   /* Set aspath attribute flag. */
-  attr->flag |= ATTR_FLAG_BIT (BGP_ATTR_NEW_AS_PATH);
+  attr->flag |= ATTR_FLAG_BIT (BGP_ATTR_AS4_PATH);
 
   return 0;
 }
@@ -884,9 +884,9 @@ bgp_attr_aggregator (struct peer *peer, bgp_size_t length,
   int wantedlen;
 
   /*
-   * peer with 4BYTE_AS will send 4 Byte AS, peer without will send 2 Byte
+   * peer with AS4 will send 4 Byte AS, peer without will send 2 Byte
    */
-  if ( CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV ) )
+  if ( CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV ) )
     wantedlen = 8;
   else
     wantedlen = 6;
@@ -901,7 +901,7 @@ bgp_attr_aggregator (struct peer *peer, bgp_size_t length,
       return -1;
     }
 
-  if ( CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV ) )
+  if ( CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV ) )
     attr->aggregator_as = stream_getl (peer->ibuf);
   else
     attr->aggregator_as = stream_getw (peer->ibuf);
@@ -937,7 +937,7 @@ bgp_attr_new_aggregator (struct peer *peer, bgp_size_t length,
   attr->new_aggregator_as = new_aggregator_as;
   attr->new_aggregator_addr.s_addr = new_aggregator_address;
 
-  attr->flag |= ATTR_FLAG_BIT (BGP_ATTR_NEW_AGGREGATOR);
+  attr->flag |= ATTR_FLAG_BIT (BGP_ATTR_AS4_AGGREGATOR);
 
   return 0;
 }
@@ -1320,7 +1320,7 @@ bgp_attr_parse (struct peer *peer, struct attr *attr, bgp_size_t size,
 	case BGP_ATTR_AS_PATH:
 	  ret = bgp_attr_aspath (peer, length, attr, flag, startp);
 	  break;
-	case BGP_ATTR_NEW_AS_PATH:
+	case BGP_ATTR_AS4_PATH:
 	  ret = bgp_attr_new_aspath (peer, length, attr, flag, startp);
 	  break;
 	case BGP_ATTR_NEXT_HOP:	
@@ -1338,7 +1338,7 @@ bgp_attr_parse (struct peer *peer, struct attr *attr, bgp_size_t size,
 	case BGP_ATTR_AGGREGATOR:
 	  ret = bgp_attr_aggregator (peer, length, attr, flag);
 	  break;
-	case BGP_ATTR_NEW_AGGREGATOR:
+	case BGP_ATTR_AS4_AGGREGATOR:
 	  ret = bgp_attr_new_aggregator (peer, length, attr, flag);
 	  break;
 	case BGP_ATTR_COMMUNITIES:
@@ -1392,63 +1392,63 @@ bgp_attr_parse (struct peer *peer, struct attr *attr, bgp_size_t size,
     }
 
   /* 
-   * At this place we can see whether we got NEW_ASPATH and/or
-   * NEW_AGGREGATOR from a 16Bit peer and act accordingly.
+   * At this place we can see whether we got AS4_PATH and/or
+   * AS4_AGGREGATOR from a 16Bit peer and act accordingly.
    * We can not do this before we've read all attributes because
-   * the asn32 handling does not say whether NEW_AS_PATH has to be sent
-   * after AS_PATH or not - and when NEW_AGGREGATOR will be send
+   * the as4 handling does not say whether AS4_PATH has to be sent
+   * after AS_PATH or not - and when AS4_AGGREGATOR will be send
    * in relationship to AGGREGATOR.
    * So, to be defensive, we are not relying on any order and read
    * all attributes first, including these 32bit ones, and now,
-   * afterwards, we look what and if something is to be done for asn32.
+   * afterwards, we look what and if something is to be done for as4.
    */
 
-  if ( CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV ) )
+  if ( CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV ) )
     {
-      /* peer can do 4BYTE, so we ignore NEW_AS_PATH and NEW_AGGREGATOR
+      /* peer can do AS4, so we ignore AS4_PATH and AS4_AGGREGATOR
        * if given.
        * It is worth a warning though, because the peer really
        * should not send them
        */
-      if ( CHECK_BITMAP (seen, BGP_ATTR_NEW_AS_PATH) )
+      if ( CHECK_BITMAP (seen, BGP_ATTR_AS4_PATH) )
         {
-	  if ( BGP_DEBUG(asn32, ASN32))
-	       zlog_debug ( "[ASN32] %s BGP 4BYTE AS capable peer send NEW_AS_PATH", peer->host);
+	  if ( BGP_DEBUG(as4, AS4))
+	       zlog_debug ( "[AS4] %s BGP AS4 capable peer send AS4_PATH", peer->host);
 	}
-      if ( CHECK_BITMAP (seen, BGP_ATTR_NEW_AGGREGATOR) )
+      if ( CHECK_BITMAP (seen, BGP_ATTR_AS4_AGGREGATOR) )
         {
-	  if ( BGP_DEBUG(asn32, ASN32))
-	    zlog_debug ( "[ASN32] %s BGP 4BYTE AS capable peer send NEW_AGGREGATOR", peer->host);
+	  if ( BGP_DEBUG(as4, AS4))
+	    zlog_debug ( "[AS4] %s BGP AS4 capable peer send AS4_AGGREGATOR", peer->host);
 	}
     }
   else
     {
-      /* We have a asn16 peer.  First, look for NEW_AGGREGATOR
-       * because that may override NEW_ASPATH
+      /* We have a asn16 peer.  First, look for AS4_AGGREGATOR
+       * because that may override AS4_PATH
        */
       int ignore_new_aspath = 0;
-      if ( attr->flag & (ATTR_FLAG_BIT (BGP_ATTR_NEW_AGGREGATOR) ) )
+      if ( attr->flag & (ATTR_FLAG_BIT (BGP_ATTR_AS4_AGGREGATOR) ) )
 	{
 	  if ( attr->flag & (ATTR_FLAG_BIT (BGP_ATTR_AGGREGATOR) ) )
 	    {
 	      /* received both.
 	       * if the as_number in aggregator is not AS_TRANS,
-	       *  then NEW_Aggregator and NEW_ASPATH shall be ignored
+	       *  then AS4_AGGREGATOR and AS4_PATH shall be ignored
 	       *        and the Aggregator shall be taken as 
 	       *        info on the aggregating node, and the AS_PATH
 	       *        shall be taken as the AS_PATH
 	       *  otherwise
 	       *        the Aggregator shall be ignored and the
-	       *        NEW_Aggregator shall be taken as the
+	       *        AS4_AGGREGATOR shall be taken as the
 	       *        Aggregating node and the AS_PATH is to be
 	       *        constructed "as in all other cases"
 	       */
 	      if ( attr->aggregator_as != BGP_AS_TRANS )
 		{
 		  /* ignore */
-		  if ( BGP_DEBUG(asn32, ASN32))
+		  if ( BGP_DEBUG(as4, AS4))
 		    zlog_debug (
-			"[ASN32] %s BGP not 4BYTE AS capable peer send AGGREGATOR != AS_TRANS and NEW_AGGREGATOR, so ignore NEW_AGGREGATOR and NEW_ASPATH", peer->host);
+			"[AS4] %s BGP not AS4 capable peer send AGGREGATOR != AS_TRANS and AS4_AGGREGATOR, so ignore AS4_AGGREGATOR and AS4_PATH", peer->host);
 		  ignore_new_aspath = 1;
 		}
 	      else
@@ -1460,21 +1460,21 @@ bgp_attr_parse (struct peer *peer, struct attr *attr, bgp_size_t size,
 	    }
 	  else
 	    {
-	      /* We received a NEW_AGGREGATOR but no AGGREGATOR.
+	      /* We received a AS4_AGGREGATOR but no AGGREGATOR.
 	       * That is bogus - but reading the conditions
-	       * we have to handle NEW_AGGREGATOR as if it were
+	       * we have to handle AS4_AGGREGATOR as if it were
 	       * AGGREGATOR in that case
 	       */
-	      if ( BGP_DEBUG(asn32, ASN32))
+	      if ( BGP_DEBUG(as4, AS4))
 		zlog_debug (
-		      "[ASN32] %s BGP not 4BYTE AS capable peer send NEW_AGGREGATOR but no AGGREGATOR, will take it as if AGGREGATOR with AS_TRANS had been there", peer->host);
+		      "[AS4] %s BGP not AS4 capable peer send AS4_AGGREGATOR but no AGGREGATOR, will take it as if AGGREGATOR with AS_TRANS had been there", peer->host);
 	      attr->aggregator_as = attr->new_aggregator_as;
 	      /* sweep it under the carpet and simulate a "good" AGGRGATOR */
 	      SET_BITMAP (seen, BGP_ATTR_AGGREGATOR);
 	      attr->flag |= (ATTR_FLAG_BIT (BGP_ATTR_AGGREGATOR));
 	    }
 	}
-      if ( !ignore_new_aspath && (attr->flag & ( ATTR_FLAG_BIT( BGP_ATTR_NEW_AS_PATH))) )
+      if ( !ignore_new_aspath && (attr->flag & ( ATTR_FLAG_BIT( BGP_ATTR_AS4_PATH))) )
 	{
 	  if ( ! (attr->flag & ( ATTR_FLAG_BIT( BGP_ATTR_AS_PATH))))
 	    {
@@ -1486,20 +1486,20 @@ bgp_attr_parse (struct peer *peer, struct attr *attr, bgp_size_t size,
 	       * Take this as a "malformed attribute"
 	       */
 	      zlog (peer->log, LOG_ERR, 
-		    "%s BGP not 4BYTE AS capable peer sent NEW_ASPATH but no AS_PATH, cant do anything here", peer->host);
+		    "%s BGP not AS4 capable peer sent AS4_PATH but no AS_PATH, cant do anything here", peer->host);
 	      bgp_notify_send (peer, 
 			       BGP_NOTIFY_UPDATE_ERR, 
 			       BGP_NOTIFY_UPDATE_MAL_ATTR);
 	      return -1;
 	    }
-	  /* We have NEW_AS_PATH AND AS_PATH
+	  /* We have AS4_PATH AND AS_PATH
 	   * Calculate the number of as numbers in both attributes!
 	   *  What is meant is the number of "hops"!
 	   *   if numas_in_aspath < numas_in_new_aspath =>
-	   *     ignore NEW_AS_PATH, take AS_PATH.
+	   *     ignore AS4_PATH, take AS_PATH.
 	   *   else
 	   *     take as many as_numbers and path segments from AS_PATH
-	   *     and prepend them to NEW_AS_PATH so that
+	   *     and prepend them to AS4_PATH so that
 	   *       num_new = numas_in_aspath
 	   *      the resulting thing is our AS_PATH
 	   *  An AS_SET or AS_CONFED_SET is one hop
@@ -1507,24 +1507,24 @@ bgp_attr_parse (struct peer *peer, struct attr *attr, bgp_size_t size,
 	   */
 	  int hopnumdiff = aspath_count_hops( attr->aspath ) - aspath_count_hops( attr->new_aspath );
 
-	  if ( BGP_DEBUG(asn32, ASN32))
+	  if ( BGP_DEBUG(as4, AS4))
 	    zlog_debug (
-		"[ASN32] %s fiddling with aspath and newaspath, hopnumdifference is %d",
+		"[AS4] %s fiddling with aspath and newaspath, hopnumdifference is %d",
 			peer->host, hopnumdiff);
 	  if ( hopnumdiff >= 0 )
 	    {
-	      if ( BGP_DEBUG(asn32, ASN32))
+	      if ( BGP_DEBUG(as4, AS4))
 		zlog_debug(
-		  "[ASN32] %s got AS_PATH %s and NEW_AS_PATH %s synthesizing now", peer->host, attr->aspath->str, attr->new_aspath->str);
+		  "[AS4] %s got AS_PATH %s and AS4_PATH %s synthesizing now", peer->host, attr->aspath->str, attr->new_aspath->str);
 	      aspath_truncateathopsandjoin( &attr->aspath, &attr->new_aspath, hopnumdiff );
-	      if ( BGP_DEBUG(asn32, ASN32))
+	      if ( BGP_DEBUG(as4, AS4))
 		zlog_debug(
-		  "[ASN32] %s result of synthesizing is %s", peer->host, attr->aspath->str);
+		  "[AS4] %s result of synthesizing is %s", peer->host, attr->aspath->str);
 	    }
 	}
     }
 
-  /* At this stage, we have done all fiddling with asn32, and the
+  /* At this stage, we have done all fiddling with as4, and the
    * resulting info is in attr->aggregator resp. attr->aspath
    * so we can chuck new_aggregator and new_aspath alltogether in
    * order to save memory
@@ -1653,12 +1653,12 @@ bgp_packet_attribute (struct bgp *bgp, struct peer *peer,
   else
     aspath = attr->aspath;
 
-  /* If peer is not AS32 capable, then:
-   * - send the created ASPATH out as NEW_ASPATH (optional, transitive),
+  /* If peer is not AS4 capable, then:
+   * - send the created AS_PATH out as AS4_PATH (optional, transitive),
    *   but ensure that no AS_CONFED_SEQUENCE and AS_CONFED_SET path segment
    *   types are in it (i.e. exclude them if they are there)
    *   AND do this only if there is at least one asnum > 65535 in the path!
-   * - send an ASPATH out, but put 16Bit ASnums in it, not 32bit, and change
+   * - send an AS_PATH out, but put 16Bit ASnums in it, not 32bit, and change
    *   all ASnums > 65535 to BGP_AS_TRANS
    *
    * Beware: aspath_data_size is ONLY correct if there is no aspath segment
@@ -1670,9 +1670,9 @@ bgp_packet_attribute (struct bgp *bgp, struct peer *peer,
   aspath_data_size = aspath_size (aspath);
   numas = aspath_count_numas( aspath );
 
-  if ( CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV ) )
+  if ( CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV ) )
     {
-      /* this is the easy part, peer is asn32 capable, send 4 byte aspath */
+      /* this is the easy part, peer is as4 capable, send 4 byte aspath */
       if (aspath_data_size > 255)
 	{
 	  stream_putc (s, BGP_ATTR_FLAG_TRANS|BGP_ATTR_FLAG_EXTLEN);
@@ -1710,7 +1710,7 @@ bgp_packet_attribute (struct bgp *bgp, struct peer *peer,
 
       if ( aspath_count_num32as( aspath ) > 0 )
         {
-	  /* put out NEW_AS_PATH (only if there are ASnums > 65535 in path */
+	  /* put out AS4_PATH (only if there are ASnums > 65535 in path */
 
 	  /* Get rid of all AS_CONFED_SEQUENCE and AS_CONFED_SET
 	   * path segments!
@@ -1727,13 +1727,13 @@ bgp_packet_attribute (struct bgp *bgp, struct peer *peer,
 	  if (aspath_data_size > 255)
 	    {
 	      stream_putc (s, BGP_ATTR_FLAG_TRANS|BGP_ATTR_FLAG_OPTIONAL|BGP_ATTR_FLAG_EXTLEN);
-	      stream_putc (s, BGP_ATTR_NEW_AS_PATH);
+	      stream_putc (s, BGP_ATTR_AS4_PATH);
 	      stream_putw (s, aspath_data_size);
 	    }
 	  else
 	    {
 	      stream_putc (s, BGP_ATTR_FLAG_TRANS|BGP_ATTR_FLAG_OPTIONAL);
-	      stream_putc (s, BGP_ATTR_NEW_AS_PATH);
+	      stream_putc (s, BGP_ATTR_AS4_PATH);
 	      stream_putc (s, aspath_data_size);
 	    }
 	  aspath_put (s, aspath, 1);
@@ -1790,18 +1790,18 @@ bgp_packet_attribute (struct bgp *bgp, struct peer *peer,
   /* Aggregator. */
   if (attr->flag & ATTR_FLAG_BIT (BGP_ATTR_AGGREGATOR))
     {
-	  /* If peer is AS32 capable,
+	  /* If peer is AS4 capable,
 	   * then
 	   *    send BGP_ATTR_AGGREGATOR with 32 bit AS value
 	   * else
 	   *   if attr->aggregator_as > 65535
 	   *    change the aggregator_as in the AGGREGATOR to AS_TRANS
-	   *    and send out a NEW_AGGREGATOR (opt, transitional)
+	   *    and send out a AS4_AGGREGATOR (opt, transitional)
 	   *    with the correct 4 Bytes thingy.
 	   *   else
 	   *    proceed as you always did
 	   */
-      if ( CHECK_FLAG (peer->cap, PEER_CAP_4BYTE_AS_RCV ) )
+      if ( CHECK_FLAG (peer->cap, PEER_CAP_AS4_RCV ) )
         {
 	  stream_putc (s, BGP_ATTR_FLAG_OPTIONAL|BGP_ATTR_FLAG_TRANS);
 	  stream_putc (s, BGP_ATTR_AGGREGATOR);
@@ -1820,7 +1820,7 @@ bgp_packet_attribute (struct bgp *bgp, struct peer *peer,
 	      stream_put_ipv4 (s, attr->aggregator_addr.s_addr);
 
 	      stream_putc (s, BGP_ATTR_FLAG_OPTIONAL|BGP_ATTR_FLAG_TRANS);
-	      stream_putc (s, BGP_ATTR_NEW_AGGREGATOR);
+	      stream_putc (s, BGP_ATTR_AS4_AGGREGATOR);
 	      stream_putc (s, 8);
 	      stream_putl (s, attr->aggregator_as);
 	      stream_put_ipv4 (s, attr->aggregator_addr.s_addr);
