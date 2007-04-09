@@ -239,6 +239,8 @@ AC_ARG_ENABLE(gcc-rdynamic,
 [  --enable-gcc-rdynamic   enable gcc linking with -rdynamic for better backtraces])
 AC_ARG_ENABLE(time-check,
 [  --disable-time-check          disable slow thread warning messages])
+AC_ARG_ENABLE(tcp-md5,
+[  --enable-tcp-md5              enable RFC 2385 TCP MD5 signatures])
 
 if test x"${enable_gcc_ultra_verbose}" = x"yes" ; then
   CFLAGS="${CFLAGS} -W -Wcast-qual -Wstrict-prototypes"
@@ -1355,6 +1357,13 @@ AC_TRY_LINK([#ifdef HAVE_SYS_TYPES_H
 ac_cv_htonl_works=yes,
 ac_cv_htonl_works=no)])
 AC_MSG_RESULT($ac_cv_htonl_works)
+
+dnl -------------------------------------------------------------
+dnl Check to see if RFC 2385 TCP MD5 signatures have been enabled
+dnl--------------------------------------------------------------
+if test "${enable_tcp_md5}" = "yes"; then
+  AC_DEFINE(HAVE_TCP_MD5,,RFC 2385 TCP MD5 signatures)
+fi
 
 AC_CONFIG_FILES([Makefile lib/Makefile zebra/Makefile ripd/Makefile 
 	  ripngd/Makefile bgpd/Makefile ospfd/Makefile watchquagga/Makefile
