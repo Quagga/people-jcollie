@@ -167,6 +167,8 @@ ospf_new (void)
 
   new->default_originate = DEFAULT_ORIGINATE_NONE;
 
+  new->passive_interface_default = OSPF_IF_ACTIVE;
+  
   new->new_external_route = route_table_init ();
   new->old_external_route = route_table_init ();
   new->external_lsas = route_table_init ();
@@ -352,6 +354,10 @@ ospf_terminate (void)
     return;
   
   SET_FLAG (om->options, OSPF_MASTER_SHUTDOWN);
+
+  /* exit immediately if OSPF not actually running */
+  if (listcount(om->ospf) == 0)
+    exit(0);
 
   for (ALL_LIST_ELEMENTS (om->ospf, node, nnode, ospf))
     ospf_finish (ospf);
@@ -793,6 +799,23 @@ ospf_network_unset (struct ospf *ospf, struct prefix_ipv4 *p,
 int 
 ospf_network_match_iface(struct connected *co, struct prefix *net)
 {
+#define COMPATIBILITY_MODE
+  /* The old code used to have a special case for PtP interfaces:
+
+     if (if_is_pointopoint (co->ifp) && co->destination &&
+	 IPV4_ADDR_SAME ( &(co->destination->u.prefix4), &(net->u.prefix4)))
+       return 1;
+
+     The new approach is much more general.  If a peer address is supplied,
+     then we are routing to that prefix, so that's the address to compare
+     against (not the local address, which may not be unique).
+  */
+#ifndef COMPATIBILITY_MODE
+  /* new approach: more elegant and conceptually clean */
+  return prefix_match(net, CONNECTED_PREFIX(co));
+#else /* COMPATIBILITY_MODE */
+  /* match old (strange?) behavior */
+
   /* Behaviour to match both Cisco where:
    *   iface address lies within network specified -> ospf
    * and zebra 0.9[2ish-3]:
@@ -804,7 +827,7 @@ ospf_network_match_iface(struct connected *co, struct prefix *net)
    * exactly; this is not a test for falling within the prefix.  This
    * test is solely for compatibility with zebra.
    */
-  if (if_is_pointopoint (co->ifp) && co->destination &&
+  if (CONNECTED_PEER(co) &&
       IPV4_ADDR_SAME ( &(co->destination->u.prefix4), &(net->u.prefix4)))
     return 1;
 
@@ -824,6 +847,8 @@ ospf_network_match_iface(struct connected *co, struct prefix *net)
     return 1;
 
   return 0;			/* no match */
+
+#endif /* COMPATIBILITY_MODE */
 }
 
 void
@@ -854,10 +879,7 @@ ospf_network_run (struct ospf *ospf, struct prefix *p, struct ospf_area *area)
           if (CHECK_FLAG(co->flags,ZEBRA_IFA_SECONDARY))
             continue;
 
-	  if (CONNECTED_POINTOPOINT_HOST(co))
-	    addr = co->destination;
-	  else 
-	    addr = co->address;
+	  addr = CONNECTED_ID(co);
 
 	  if (p->family == co->address->family 
 	      && ! ospf_if_is_configured (ospf, &(addr->u.prefix4))
@@ -894,8 +916,6 @@ ospf_network_run (struct ospf *ospf, struct prefix *p, struct ospf_area *area)
 		if ((ospf->router_id.s_addr != 0)
 		    && if_is_operative (ifp)) 
 		  ospf_if_up (oi);
-
-		break;
 	      }
 	}
     }
