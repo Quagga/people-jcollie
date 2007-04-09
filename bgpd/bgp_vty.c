@@ -267,9 +267,14 @@ DEFUN (bgp_config_type,
 
 DEFUN (bgp_asnum_output_format,
 	bgp_asnum_output_format_cmd,
-	"bgp asnum format (asdot|asdot+|asplain|asip)",
-	"BGP_STR"
-	"ASnumber format"
+	"bgp asnum format (asdot|asdot+|asip|asplain)",
+	BGP_STR
+	"ASnumber format\n"
+	"Set ASnumber output format\n"
+	"[<16bitdecimal>.]<16bitdecimal>\n"
+	"<16bitdecimal>.<16bitdecimal>\n"
+	"<8bitdecimal>.<8bitdecimal>.<8bitdecimal>.<8bitdecimal>\n"
+	"<32bitdecimal>\n"
 	)
 {
   int lastasnumberformat, newasnumberformat;
@@ -10397,7 +10402,7 @@ extcommunity_list_unset_vty (struct vty *vty, int argc, const char **argv,
 
 /* "extcommunity-list" keyword help string.  */
 #define EXTCOMMUNITY_LIST_STR "Add a extended community list entry\n"
-#define EXTCOMMUNITY_VAL_STR  "Extended community attribute in 'rt ASN:nn_or_IPaddr:nn' OR 'soo ASN:nn_or_IPaddr:nn' format\n"
+#define EXTCOMMUNITY_VAL_STR  "Extended community attribute in 'rt \\+?ASN_or_IPaddr:nn' OR 'soo \\+?ASN_or_IPaddr:nn' format\n"
 
 DEFUN (ip_extcommunity_list_standard,
        ip_extcommunity_list_standard_cmd,

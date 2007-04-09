@@ -291,6 +291,9 @@ struct peer
   int status;
   int ostatus;
 
+  /* Peer index, used for dumping TABLE_DUMP_V2 format */
+  uint16_t table_dump_index;
+
   /* Peer information */
   int fd;			/* File descriptor */
   int ttl;			/* TTL of TCP connection to the peer. */

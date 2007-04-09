@@ -1,3 +1,46 @@
+2007-03-08 Juergen Kammer <j.kammer@eurodata.de>
+
+	* bgp_attr.c: some more code cleanup, rename new_aggregator to
+	  as4_aggregator, and new_aspath to as4_aspath
+	* bgp_attr.h: some more code cleanup, rename new_aggregator to
+	  as4_aggregator, and new_aspath to as4_aspath
+	* bgp_aspath.c: some more code cleanup, rename new_aggregator to
+	  as4_aggregator, and new_aspath to as4_aspath
+
+2007-03-07 Juergen Kammer <j.kammer@eurodata.de>
+
+	* these changes are from Paul, as of 2007-02-22 Paul Jakma
+	  <paul.jakma@sun.com> (rebase patch on cvs 20070307)
+	* bgp_fsm.c: (bgp_fsm_change_status) Handle state change into
+	  clearing or greater here. Simpler.
+	  (bgp_event) Clearing state change work moved to previous
+	* bgp_route.c: (bgp_clear_route_node) Clearing adj-in here
+	  is too late, as it leaves a race between a peer being deleted
+	  and an identical peer being configured before clearing
+	  completes, leading to a crash.
+	  Simplest fix is to clean peers Adj-in up-front, rather than
+	  queueing such work.
+	  (bgp_clear_route_table) Clear peer's Adj-In and Adj-Out
+	  up-front here, rather than queueing such work.
+	  Extensive comment added on the various bits of indexed data
+	  that exist and how they need to be dealt with.
+	  (bgp_clear_route) Update comment.
+
+2007-03-06 Juergen Kammer <j.kammer@eurodata.de>
+
+	* bgp_attr.c: import new mrt patch from Erik
+	* bgp_attr.h: import new mrt patch from Erik
+	* bgp_dump.c: import new mrt patch from Erik
+	* bgp_dump.h: import new mrt patch from Erik
+	* bgpd.h: import new mrt patch from Erik
+
+2007-03-05 Juergen Kammer <j.kammer@eurodata.de>
+
+	* bgp_ecommunity.c: Introduce a new syntax, if as4 ecommunity
+	  is to be used, there must be a '+' in front of the
+	  as number.  Thus the as number itself may be in any
+	  format (besides asip, but that is a joke anyway).
+
 2007-02-22 Paul Jakma <paul.jakma@sun.com>
 
 	* bgp_fsm.c: (bgp_fsm_change_status) Handle state change into
@@ -14,6 +57,25 @@
 	  Extensive comment added on the various bits of indexed data
 	  that exist and how they need to be dealt with.
 	  (bgp_clear_route) Update comment.
+	
+2007-02-12 Juergen Kammer <j.kammer@eurodata.de>
+
+	* bgp_attr.c: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_aspath.c: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_vty.c: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_aspath.h: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_ecommunity.c: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_ecommunity.h: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_mplsvpn.c: Add missing include
+	* bgp_open.c: Change all asn32 to AS4, change NEW_* to AS4_*, add
+	  missing include
+	* bgp_open.h: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_packet.c: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgpd.c: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_debug.c: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgpd.h: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_debug.h: Change all asn32 to AS4, change NEW_* to AS4_*
+	* bgp_dump.c: Change all asn32 to AS4, change NEW_* to AS4_*
 
 2007-01-17 Juergen Kammer <j.kammer@eurodata.de>
 

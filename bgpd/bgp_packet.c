@@ -1230,7 +1230,7 @@ bgp_open_receive (struct peer *peer, bgp_size_t size)
 	    {
 	      /* raise error, log this, close session */
 	      zlog_err ("%s bad OPEN, got AS_TRANS but no AS4 capability address peer->cap is %08x, value %d",
-		  peer->host, &peer->cap, peer->cap);
+		  peer->host, (u_int32_t) &peer->cap, peer->cap);
 	      /* which error to notify? well, use something generic,
 	       * our log has the right reason
 	       */

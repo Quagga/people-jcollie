@@ -285,6 +285,7 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
   const char *p = str;
   struct in_addr ip;
   as_t as4;
+  int wantas4;
   char helpstr[INET_ADDRSTRLEN + 1];
 
   /* Skip white space. */
@@ -299,7 +300,7 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
     return NULL;
 
   /* "rt" and "soo" keyword parse. */
-  if (! isdigit ((int) *p)) 
+  if (! isdigit ((int) *p) && *p != '+') 
     {
       /* "rt" match check.  */
       if (tolower ((int) *p) == 'r')
@@ -348,10 +349,23 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
       goto error;
     }
   
-  as4 = (as_t) 0;
-  while (isdigit ((int) *p) || *p == ':' || *p == '.') 
+  as4 = (as_t) 0;  wantas4 = 0;
+  while (isdigit ((int) *p) || *p == ':' || *p == '.' || *p == '+' ) 
     {
-      if (*p == ':') 
+      if ( *p == '+' )
+	{
+	  /* '+' indicates an  AS number which should be encoded
+	   * into a ECOMMUNITY_ENCODE_AS4
+	   * The actual *value* of the as number is independent
+	   * of the line representation of the extended community
+	   */
+	    /* test: seen a '+' before? that is an error */
+	  if ( as4 || wantas4 || val_low || val_high )
+	    goto error;
+
+	  wantas4 = 1;
+	}
+      else if (*p == ':') 
 	{
 	  if (separator)
 	    goto error;
@@ -370,7 +384,15 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
 	      if ( dot == 1 )
 		{
 		  /* ONE dot => 4 Byte AS number */
-		  as4 = str2asnum( helpstr, NULL);
+		  if ( wantas4 )
+		    {
+		      /* wantas4: skip the '+' at the start */
+		      as4 = str2asnum( helpstr+1, NULL);
+		    }
+		  else
+		    {
+		      as4 = str2asnum( helpstr, NULL);
+		    }
 		  if ( !as4 )
 		    goto error;
 		}
@@ -407,16 +429,13 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
   if (! digit || ! separator)
     goto error;
 
-  if ( !as4 && !dot && val_high > 65535 )
+  /* move asnumber to as4, even if it is < 65536 */
+  if ( !as4 && dot != 1 )
     {
-      /* Ha.  someone using asplain for input
-       * Automagically switch to 4 byte as!
-       * Got it!
-       */
       as4 = val_high;
     }
   /* Encode result into routing distinguisher.  */
-  if (as4)
+  if (wantas4)
     {
       eval->val[0] = ECOMMUNITY_ENCODE_AS4;
       eval->val[1] = 0;
@@ -427,7 +446,7 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
       eval->val[6] = (val_low >> 8) & 0xff;
       eval->val[7] = val_low & 0xff;
     }
-  else if (dot)
+  else if (dot && dot != 1)
     {
       eval->val[0] = ECOMMUNITY_ENCODE_IP;
       eval->val[1] = 0;
@@ -439,6 +458,14 @@ ecommunity_gettoken (const char *str, struct ecommunity_val *eval,
     {
       eval->val[0] = ECOMMUNITY_ENCODE_AS;
       eval->val[1] = 0;
+      if ( as4 > 65535 )
+        {
+	  /* ENCODE_AS can only code with < 65536.
+	   * use BGP_AS_TRANS if we have a too big as number
+	   */
+
+	  val_high = BGP_AS_TRANS;
+	}
       eval->val[2] = (val_high >>8) & 0xff;
       eval->val[3] = val_high & 0xff;
       eval->val[4] = (val_low >>24) & 0xff;
@@ -565,7 +592,7 @@ ecommunity_ecom2str (struct ecommunity *ecom, int format)
   u_int8_t *pnt;
   int encode = 0;
   int type = 0;
-#define ECOMMUNITY_STR_DEFAULT_LEN  26
+#define ECOMMUNITY_STR_DEFAULT_LEN  27
   int str_size;
   int str_pnt;
   char *str_buf;
@@ -661,16 +688,8 @@ ecommunity_ecom2str (struct ecommunity *ecom, int format)
 	  eas.val = (*pnt++ << 8);
 	  eas.val |= (*pnt++);
 
-	  /* Bad luck. Have to enforce asdot+ here, otherwise reading in
-	   * the values again from a config file will not work, and you
-	   * can not detect an as4 extcommunity if the asn is < 65536.
-	   * Probably this syntax is the wrong one to use after all,
-	   * having even one place to rely on a specific format does not
-	   * fit in a "configurable format".
-	   * So I can not use as2str here.
-	   */
-	  len = sprintf (str_buf + str_pnt, "%s%u.%u:%d", prefix,
-			 (eas.as>>16)&0xffff, eas.as&0xffff, eas.val);
+	  len = sprintf( str_buf + str_pnt, "%s+%s:%d", prefix,
+			  as2str(eas.as), eas.val );
 	  str_pnt += len;
 	  first = 0;
 	}
@@ -684,8 +703,8 @@ ecommunity_ecom2str (struct ecommunity *ecom, int format)
 	  eas.val |= (*pnt++ << 8);
 	  eas.val |= (*pnt++);
 
-	  len = sprintf (str_buf + str_pnt, "%s%d:%d", prefix,
-			 eas.as, eas.val);
+	  len = sprintf (str_buf + str_pnt, "%s%s:%d", prefix,
+			 as2str(eas.as), eas.val);
 	  str_pnt += len;
 	  first = 0;
 	}

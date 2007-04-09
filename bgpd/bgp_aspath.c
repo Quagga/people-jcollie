@@ -1406,7 +1406,7 @@ aspath_cmp_left (struct aspath *aspath1, struct aspath *aspath2)
 /* Truncate an aspath after a number of hops, and put the hops remaining
  * at the front of another aspath.  Needed for AS4 compat. */
 void
-aspath_truncateathopsandjoin( struct aspath **aspath, struct aspath **new_aspath,int hops )
+aspath_truncateathopsandjoin( struct aspath **aspath, struct aspath **as4_aspath,int hops )
 {
   struct assegment *startseg, *seg;
   struct assegment *prevseg = NULL;
@@ -1446,9 +1446,9 @@ aspath_truncateathopsandjoin( struct aspath **aspath, struct aspath **new_aspath
 		   */
 		  assegment_free( seg );
 		  if (BGP_DEBUG (as4, AS4))
-		    zlog_debug ("[AS4] ASPATH32mangle: AS_CONFED_SEQUENCE would have been cut in two, taking AS_PATH instead of mangling");
-		  aspath_unintern(*new_aspath);
-		  *new_aspath = NULL;
+		    zlog_debug ("[AS4] AS4PATHmangle: AS_CONFED_SEQUENCE would have been cut in two, taking AS_PATH instead of mangling");
+		  aspath_unintern(*as4_aspath);
+		  *as4_aspath = NULL;
 		  return;
 		}
 	      /* take only hops */
@@ -1480,21 +1480,21 @@ aspath_truncateathopsandjoin( struct aspath **aspath, struct aspath **new_aspath
   assegment_free( seg ); /* that one is NULL-resistent */
 
   /* We have the startseg, and have to put that in front of
-   * new_aspath->seg
+   * as4_aspath->seg
    * Maybe this could be done easier, but this
    * way it works without leaving holes
    */
   newfront = aspath_new();
   newfront->segments = startseg;
 
-  newlybuild = aspath_dup(*new_aspath);
+  newlybuild = aspath_dup(*as4_aspath);
 
   aspath_merge( newfront, newlybuild );
   aspath_free(newfront);
 
   aspath_unintern(*aspath);
-  aspath_unintern(*new_aspath);
-  *new_aspath = NULL;
+  aspath_unintern(*as4_aspath);
+  *as4_aspath = NULL;
   /* We may be able to join some segments here, and we must
    * do this because... we want normalised aspaths in out hash
    * and we do not want to stumble in aspath_put.
