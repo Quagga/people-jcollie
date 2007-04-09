@@ -4788,7 +4788,7 @@ bgp_config_write (struct vty *vty)
     }
 
   {
-    /* Sigh.  Wish we woud not have had to do this....
+    /* Sigh.  Wish we would not have had to do this....
      */
     int asnumber_format = get_asnumber_format();
     if (asnumber_format != BGP_ASNUMBER_FORMAT_DEFAULT)

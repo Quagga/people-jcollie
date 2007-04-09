@@ -81,7 +81,7 @@ enum bgp_asnumber_format
  * Aeh, ASIP is more like a joke, nobody wants this - lets say it is
  * for testing purposes ;-)
  * 
- * As of now, the RIRs and Cisco already use ASPLAIN so we use that as
+ * As of now, the RIRs and Cisco already use ASDOT so we use that as
  * default.
  * For everybody, the summary (all <...> are given out as decimal value):
  *

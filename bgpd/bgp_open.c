@@ -575,7 +575,7 @@ void peek_for_as32_capability( struct peer *peer, u_char length )
     zlog_debug ("[ASN32] %s rcv OPEN w/ OPTION parameter len: %u, peeking for as32",
 	       peer->host, length);
   
-  /* the error cases do DONT handle, we ONLY try to read as32 out of
+  /* the error cases we DONT handle, we ONLY try to read as32 out of
    * correctly formatted options
    */
   while (pnt < end) 

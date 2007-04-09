@@ -10397,7 +10397,7 @@ extcommunity_list_unset_vty (struct vty *vty, int argc, const char **argv,
 
 /* "extcommunity-list" keyword help string.  */
 #define EXTCOMMUNITY_LIST_STR "Add a extended community list entry\n"
-#define EXTCOMMUNITY_VAL_STR  "Extended community attribute in 'rt aa:nn_or_IPaddr:nn' OR 'soo aa:nn_or_IPaddr:nn' format\n"
+#define EXTCOMMUNITY_VAL_STR  "Extended community attribute in 'rt ASN:nn_or_IPaddr:nn' OR 'soo ASN:nn_or_IPaddr:nn' format\n"
 
 DEFUN (ip_extcommunity_list_standard,
        ip_extcommunity_list_standard_cmd,

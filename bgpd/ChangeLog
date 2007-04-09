@@ -15,6 +15,13 @@
 	  that exist and how they need to be dealt with.
 	  (bgp_clear_route) Update comment.
 
+2007-01-17 Juergen Kammer <j.kammer@eurodata.de>
+	* bgp_ecommunity.c: string representation of asn32 must be asdot+ if
+	  we use this systax.
+	* bgp_vty.c: ip extcommunity-list <1-99>|standard has no "ASN" at
+	  the place of the AS number in the CLI prompt.
+	* bgpd.c, bgp_open.c: fixed one speling mistake each in comments
+
 2007-01-15 Juergen Kammer <j.kammer@eurodata.de>
 
 	* Several changes to bgp_dump.[ch] to support asn32 compatible mrt dumps

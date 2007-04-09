@@ -661,8 +661,16 @@ ecommunity_ecom2str (struct ecommunity *ecom, int format)
 	  eas.val = (*pnt++ << 8);
 	  eas.val |= (*pnt++);
 
-	  len = sprintf (str_buf + str_pnt, "%s%s:%d", prefix,
-			 as2str(eas.as), eas.val);
+	  /* Bad luck. Have to enforce asdot+ here, otherwise reading in
+	   * the values again from a config file will not work, and you
+	   * can not detect an asn32 extcommunity if the asn is < 65536.
+	   * Probably this syntax is the wrong one to use after all,
+	   * having even one place to rely on a specific format does not
+	   * fit in a "configurable format".
+	   * So I can not use as2str here.
+	   */
+	  len = sprintf (str_buf + str_pnt, "%s%u.%u:%d", prefix,
+			 (eas.as>>16)&0xffff, eas.as&0xffff, eas.val);
 	  str_pnt += len;
 	  first = 0;
 	}
