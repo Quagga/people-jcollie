@@ -21,7 +21,8 @@ AC_CANONICAL_TARGET()
 AM_INIT_AUTOMAKE(1.6)
 AM_CONFIG_HEADER(config.h)
 
-dnl we need gawk for memtypes.awk
+dnl GNU awk is required for lib/memtype.h made by memtypes.awk.
+dnl BSD awk complains: awk: gensub doesn't support backreferences (subst "\1")
 AC_CHECK_PROG([GAWK],[gawk],[gawk],[/bin/false])
 AC_ARG_VAR([GAWK],[GNU AWK])
 
@@ -61,7 +62,12 @@ dnl Check CC and friends
 dnl --------------------
 AC_PROG_CC
 AC_PROG_CPP
+
 AC_PROG_EGREP
+
+dnl autoconf 2.59 appears not to support AC_PROG_SED
+dnl AC_PROG_SED
+AC_CHECK_PROG([SED],[sed],[sed],[/bin/false])
 
 dnl ------------------------------------------------------------------
 dnl Intel compiler check. Although Intel tries really hard to make icc

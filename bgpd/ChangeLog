@@ -1,3 +1,62 @@
+2007-04-08 Paul Jakma <paul.jakma@sun.com>
+
+	* bgp_route.c: (general) Same bug as fixed on 2006-11-28 by ajs for
+	  bgp static routes, but for main BGP RIB: Quick 'flap' of routes
+	  can cause bgpd to mistake a new route for a duplicate route,
+	  due to presence of removed, but not yet processed BGP RIB entry.
+	  (bgp_update_rsclient) Ignore REMOVED bgp_info for duplicate,
+	  restore route instead.
+	  (bgp_update_main) Ditto.
+	* bgp_attr.c: (general) Bug #354: parsing of MP_REACH_NLRI and
+	  MP_UNREACH_NLRI does not take sufficient care to ensure reads
+	  from stream buffer stay in-bounds. Hence bgpd may attempt to read
+	  beyond end of stream, if given a crafted packet. As it uses the
+	  stream access methods to do so, this will typically result in
+	  assert() being hit in stream.c. Where code is compiled without
+	  assert() enabled, result is unknown.
+	  (struct message attr_str) should be static.
+	  (bgp_mp_reach_parse) Carefully check length remaining in stream
+	  against amount desired to read from stream, prior to each read,
+	  particularly where lengths are conditional on data obtained from
+	  stream - using STREAM_READABLE.
+	  Remove code to parse SNPA-number, it's a defunct field and changed
+	  to a fixed size in latest BGP MP update RFC - log warning if
+	  SNPA-number is not 0.
+	  (bgp_mp_unreach_parse) Check withdraw_length carefully against
+	  STREAM_READABLE.
+	  (bgp_attr_parse) If attribute-parser function returns error, log
+	  warning.
+	  Log attribute type on mismatch.
+
+2007-04-07 Paul Jakma <paul.jakma@sun.com>
+
+	* bgpd.c: (general) Fix bug #352
+	  (bgp_config_write_family_header) write ipv6/multicast
+	  address family header.
+	  (bgp_config_write) write out ipv6 multicast AF config.
+
+2007-02-22 Paul Jakma <paul.jakma@sun.com>
+
+	* bgp_fsm.c: (bgp_fsm_change_status) Handle state change into
+	  clearing or greater here. Simpler.
+	  (bgp_event) Clearing state change work moved to previous
+	* bgp_route.c: (bgp_clear_route_node) Clearing adj-in here
+	  is too late, as it leaves a race between a peer being deleted
+	  and an identical peer being configured before clearing
+	  completes, leading to a crash.
+	  Simplest fix is to clean peers Adj-in up-front, rather than
+	  queueing such work.
+	  (bgp_clear_route_table) Clear peer's Adj-In and Adj-Out
+	  up-front here, rather than queueing such work.
+	  Extensive comment added on the various bits of indexed data
+	  that exist and how they need to be dealt with.
+	  (bgp_clear_route) Update comment.
+
+2006-12-12 Andrew J. Schorr <ajschorr@alumni.princeton.edu>
+	
+	* bgp_nexthop.c: (bgp_connected_add, bgp_connected_delete)
+	  Simplify logic by using new CONNECTED_PREFIX macro.
+
 2006-12-07 Paul Jakma <paul.jakma@sun.com>
 
 	* bgp_fsm.c: Bug #302 fix, diagnosis, suggestions and testing
