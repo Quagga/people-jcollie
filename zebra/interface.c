@@ -372,15 +372,10 @@ if_add_update (struct interface *ifp)
 void 
 if_delete_update (struct interface *ifp)
 {
-  struct listnode *node;
-  struct listnode *next;
-  struct listnode *first;
-  struct listnode *last;
   struct connected *ifc;
   struct prefix *p;
   struct route_node *rn;
   struct zebra_if *zebra_if;
-  struct list *addr_list;
 
   zebra_if = ifp->info;
 
@@ -401,7 +396,9 @@ if_delete_update (struct interface *ifp)
   /* Delete connected routes from the kernel. */
   if (ifp->connected)
     {
-      last = NULL;
+      struct listnode *node;
+      struct listnode *last = NULL;
+
       while ((node = (last ? last->next : listhead (ifp->connected))))
 	{
 	  ifc = listgetdata (node);
@@ -410,21 +407,26 @@ if_delete_update (struct interface *ifp)
 	  if (p->family == AF_INET
 	      && (rn = route_node_lookup (zebra_if->ipv4_subnets, p)))
 	    {
+	      struct listnode *anode;
+	      struct listnode *next;
+	      struct listnode *first;
+	      struct list *addr_list;
+	      
 	      route_unlock_node (rn);
 	      addr_list = (struct list *) rn->info;
 	      
 	      /* Remove addresses, secondaries first. */
 	      first = listhead (addr_list);
-	      for (node = first->next; node || first; node = next)
+	      for (anode = first->next; anode || first; anode = next)
 		{
-		  if (! node)
+		  if (!anode)
 		    {
-		      node = first;
+		      anode = first;
 		      first = NULL;
 		    }
-		  next = node->next;
+		  next = anode->next;
 
-		  ifc = listgetdata (node);
+		  ifc = listgetdata (anode);
 		  p = ifc->address;
 
 		  connected_down_ipv4 (ifp, ifc);
@@ -434,12 +436,17 @@ if_delete_update (struct interface *ifp)
 		  UNSET_FLAG (ifc->conf, ZEBRA_IFC_REAL);
 
 		  /* Remove from subnet chain. */
-		  list_delete_node (addr_list, node);
+		  list_delete_node (addr_list, anode);
 		  route_unlock_node (rn);
 		  
 		  /* Remove from interface address list (unconditionally). */
-		  listnode_delete (ifp->connected, ifc);
-	      	  connected_free (ifc);
+		  if (!CHECK_FLAG (ifc->conf, ZEBRA_IFC_CONFIGURED))
+		    {
+		      listnode_delete (ifp->connected, ifc);
+		      connected_free (ifc);
+                    }
+                  else
+                    last = node;
 		}
 
 	      /* Free chain list and respective route node. */
@@ -564,10 +571,6 @@ static void
 connected_dump_vty (struct vty *vty, struct connected *connected)
 {
   struct prefix *p;
-  struct interface *ifp;
-
-  /* Set interface pointer. */
-  ifp = connected->ifp;
 
   /* Print interface address. */
   p = connected->address;
@@ -576,21 +579,10 @@ connected_dump_vty (struct vty *vty, struct connected *connected)
   vty_out (vty, "/%d", p->prefixlen);
 
   /* If there is destination address, print it. */
-  p = connected->destination;
-  if (p)
+  if (connected->destination)
     {
-      if (p->family == AF_INET)
-	if (ifp->flags & IFF_BROADCAST)
-	  {
-	    vty_out (vty, " broadcast ");
-	    prefix_vty_out (vty, p);
-	  }
-
-      if (ifp->flags & IFF_POINTOPOINT)
-	{
-	  vty_out (vty, " pointopoint ");
-	  prefix_vty_out (vty, p);
-	}
+      vty_out (vty, (CONNECTED_PEER(connected) ? " peer " : " broadcast "));
+      prefix_vty_out (vty, connected->destination);
     }
 
   if (CHECK_FLAG (connected->flags, ZEBRA_IFA_SECONDARY))
