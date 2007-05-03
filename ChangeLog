@@ -1,3 +1,19 @@
+2007-04-30 Andrew J. Schorr <ajschorr@alumni.princeton.edu>
+
+	* configure.ac: Change gcc CFLAGS from '-std=c99' to '-std=gnu99'
+	  to improve portability.
+
+2007-04-29 Paul Jakma <paul.jakma@sun.com>
+
+	* configure.ac: Bump to 0.99.7
+
+2007-04-16  David Young  <dyoung@pobox.com>
+
+        * connected.c (zebra): Only suppress adding a connected
+          route to the kernel if it is already marked "real"
+          (ZEBRA_IFC_REAL), i.e., "in kernel."  According to Paul
+          Jakma, this probably fixes Quagga bug #202.
+
 2007-02-06  Greg Troxel  <Greg Troxel <gdt@ir.bbn.com>>
 
 	* configure.ac: Use generic sed test, since autoconf 2.59 lacks
