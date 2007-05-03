@@ -1,3 +1,18 @@
+2007-04-30 Andrew J. Schorr <ajschorr@alumni.princeton.edu>
+
+	* ospfd.c: (ospf_network_match_iface) Comment out
+	  COMPATIBILITY_MODE.  Going forward, the ospf "network" command
+	  will use a simple test: does the network command prefix
+	  contain the connected (destination) prefix of the interface?
+
+2007-04-21 Andrew J. Schorr <ajschorr@alumni.princeton.edu>
+
+	* ospf_interface.c: (ospf_if_set_multicast) Fix bug: was testing
+	  interface passive status improperly in light of the recent
+	  'passive-interface default' patch.  Now need to test
+	  OSPF_IF_PASSIVE_STATUS(oi) instead of
+	  OSPF_IF_PARAM(oi, passive_interface).
+
 2007-03-23 Paul Jakma <paul.jakma@sun.com>
 
 	* ospf_spf.c: (various) Add more debug statements.

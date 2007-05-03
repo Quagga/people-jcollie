@@ -8,7 +8,7 @@
 ## $Id$
 AC_PREREQ(2.53)
 
-AC_INIT(Quagga, 0.99.6, [http://bugzilla.quagga.net])
+AC_INIT(Quagga, 0.99.7, [http://bugzilla.quagga.net])
 AC_CONFIG_SRCDIR(lib/zebra.h)
 
 dnl -----------------------------------
@@ -119,7 +119,7 @@ if test "x${cflags_specified}" = "x" ; then
         AC_MSG_RESULT([Intel default])
         ;;
     "GCC")
-  	CFLAGS="-Os -fno-omit-frame-pointer -g -std=c99 -Wall"
+  	CFLAGS="-Os -fno-omit-frame-pointer -g -std=gnu99 -Wall"
   	CFLAGS="${CFLAGS} -Wsign-compare -Wpointer-arith"
   	CFLAGS="${CFLAGS} -Wbad-function-cast -Wwrite-strings"
   	CFLAGS="${CFLAGS} -Wmissing-prototypes -Wmissing-declarations"

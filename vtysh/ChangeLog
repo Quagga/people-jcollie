@@ -1,3 +1,10 @@
+2007-04-28 Andrew J. Schorr <ajschorr@alumni.princeton.edu>
+
+	* vtysh.c: (vtysh_log_timestamp_precision,
+	  no_vtysh_log_timestamp_precision) Implement new log timestamp
+	  precision commands: send to all daemons.
+	  (vtysh_init_vty) Install new log timestamp precision commands.
+
 2007-02-12 Juergen Kammer <j.kammer@eurodata.de>
 	* extract.pl: AS4 compatibility for router bgp ASNUMBER
 	* extract.pl.in: AS4 compatibility for router bgp ASNUMBER
